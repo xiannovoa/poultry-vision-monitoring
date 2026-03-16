@@ -286,3 +286,213 @@ En el conjunto de validación:
 - **Área máxima:** 114,821 píxeles  
 
 Estos valores indican que los pollos ocupan una **porción relativamente grande de la imagen**, lo que facilita su detección mediante modelos de visión por computador.
+
+---
+
+# Dataset 4 – Broiler weight dataset (Roboflow)
+
+**Fuente del dataset**
+
+https://universe.roboflow.com/mohamed-f-abdelshafie-yxuwl/broiler-live-weight-by-semantic-segmentation
+
+---
+
+## Descripción general
+
+Este dataset contiene imágenes de pollos broiler fotografiados sobre una báscula digital, de forma muy similar al dataset **Broiler weights of Cobb Avian (Mendeley)**.
+
+Las imágenes muestran un único pollo y en al menos una foto por individuo el animal está situado sobre una báscula, lo que permite visualizar directamente el peso registrado en el momento de la captura.
+
+Durante la inspección visual se observa que el estilo de las imágenes, el entorno y el tipo de captura parecen corresponder al mismo experimento utilizado en el dataset de Mendeley.
+
+---
+
+## Estructura del dataset
+
+El dataset está dividido en tres subconjuntos:
+
+train/  
+valid/  
+test/  
+
+El peso del animal no aparece en el nombre de las carpetas, sino que está **codificado en el nombre del archivo de imagen**.
+
+Ejemplo: 140_139-5....jpg
+
+En este caso:
+
+- **139** corresponde al peso del pollo en gramos.
+
+---
+
+## Observaciones durante la inspección
+
+Durante la inspección del dataset se detectaron varios aspectos relevantes:
+
+- Algunas imágenes parecen **duplicadas o muy similares**, posiblemente debido a exportaciones o aumentos de datos realizados en Roboflow.
+- El estilo de las imágenes coincide con el dataset de **Mendeley**, lo que sugiere que ambos podrían proceder del mismo conjunto experimental.
+
+Por este motivo será necesario verificar cuidadosamente la existencia de **duplicados entre ambos datasets** antes de combinarlos para el entrenamiento de modelos.
+
+---
+
+## Papel en el proyecto
+
+Este dataset podría utilizarse como **complemento al dataset de Mendeley** para ampliar el número total de imágenes disponibles para la tarea de **estimación de peso del pollo a partir de imágenes**.
+
+Sin embargo, antes de su uso será necesario realizar un proceso de **limpieza y verificación de duplicados**, especialmente si se pretende combinar ambos datasets.
+
+---
+
+## Preparación del dataset
+
+A diferencia del dataset de Mendeley, en este caso las imágenes no están organizadas en carpetas cuyo nombre corresponda al peso del animal.  
+
+En su lugar, como se ha mencionado antes, el **peso aparece codificado dentro del nombre del archivo**.
+
+Para poder utilizar el dataset de forma consistente con el dataset de Mendeley, se desarrolló un script de preparación (`prepare_roboflow_broiler_weight.py`) que realiza las siguientes tareas:
+
+- Recorre las carpetas `train`, `valid` y `test` del dataset original.
+- Extrae el peso del animal a partir del nombre del archivo.
+- Copia todas las imágenes a una única carpeta de trabajo.
+- Genera un archivo `labels.csv` que contiene la correspondencia entre cada imagen y su peso.
+
+De esta forma el dataset queda transformado a un formato homogéneo:
+
+data/02_work/roboflow_broiler_weight_dataset/
+
+images/  
+labels.csv  
+
+Este formato es equivalente al utilizado para el dataset de Mendeley y permite trabajar posteriormente con ambos datasets de forma conjunta.
+
+---
+
+## Análisis de duplicados entre datasets
+
+Dado que este dataset fue publicado por el **mismo autor que el dataset de Mendeley**, surgió la posibilidad de que existieran **imágenes duplicadas entre ambos conjuntos de datos**.
+
+Para comprobarlo se desarrolló un script de análisis (`check_duplicates_weight_datasets.py`) que calcula un **hash perceptual (pHash)** para cada imagen de ambos datasets y compara sus distancias.
+
+Este tipo de hash permite detectar:
+
+- imágenes idénticas
+- imágenes muy similares
+- imágenes con pequeñas variaciones (recortes, compresión, etc.)
+
+El análisis comparó:
+
+- **1714 imágenes del dataset de Mendeley**
+- **4344 imágenes del dataset de Roboflow**
+
+Los resultados obtenidos fueron:
+
+- **545 posibles duplicados detectados**
+
+Entre ellos se encuentran múltiples casos con **distancia de hash igual a 0**, lo que indica que las imágenes son **exactamente idénticas**.
+
+Ejemplo de coincidencias detectadas:
+
+dist=0  
+Mendeley : img_01093.jpg  
+Roboflow : img_01639.jpg  
+
+dist=0  
+Mendeley : img_01159.jpg  
+Roboflow : img_01018.jpg  
+
+dist=2  
+Mendeley : img_01159.jpg  
+Roboflow : img_01111.jpg  
+
+Estos resultados indican que el dataset de Roboflow **reutiliza parcialmente imágenes del dataset original de Mendeley**, o que ambos conjuntos de datos comparten una misma fuente de imágenes.
+
+---
+
+## Implicaciones para el proyecto
+
+La presencia de duplicados entre datasets es un aspecto importante a tener en cuenta, ya que podría introducir **fugas de información entre conjuntos de entrenamiento y evaluación** si ambos datasets se utilizaran simultáneamente.
+
+Por este motivo, antes de combinar ambos datasets será necesario considerar estrategias como:
+
+- eliminar duplicados exactos
+- eliminar imágenes muy similares
+- mantener únicamente las imágenes únicas de cada dataset
+
+Este análisis permite comprender mejor la relación entre ambos datasets y garantizar que los experimentos posteriores se realicen sobre datos **independientes y representativos**.
+
+---
+
+## Construcción del dataset final de pesos combinado
+
+Con el objetivo de aumentar el número total de ejemplos disponibles para la tarea de estimación de peso, se procedió a combinar el dataset de **Mendeley** con el dataset de **Roboflow**.
+
+Sin embargo, dado que ambos datasets comparten autor y presentan similitudes evidentes en las imágenes, era necesario verificar la existencia de **duplicados entre ambos conjuntos de datos**.
+
+Para ello se desarrolló un script (`build_final_weight_dataset.py`) que realiza los siguientes pasos:
+
+1. Lee las imágenes y etiquetas de ambos datasets preparados.
+2. Calcula un **hash perceptual (pHash)** para cada imagen.
+3. Detecta imágenes duplicadas o muy similares mediante la comparación de distancias entre hashes.
+4. Elimina las imágenes redundantes.
+5. Genera un **dataset final combinado libre de duplicados**.
+
+El proceso se realizó sobre:
+
+- **1714 imágenes del dataset de Mendeley**
+- **4344 imágenes del dataset de Roboflow**
+
+lo que da un total inicial de:
+
+6058 imágenes.
+
+Tras aplicar la detección de duplicados se identificaron:
+
+- **1297 imágenes duplicadas o muy similares**
+
+El dataset final resultante contiene:
+
+- **4761 imágenes únicas con su correspondiente etiqueta de peso**
+
+La estructura final del dataset generado es:
+
+data/03_final/broiler_weight_dataset/
+
+images/  
+labels.csv  
+
+Este dataset final constituye el **conjunto de datos principal para el entrenamiento de modelos de estimación de peso a partir de imágenes**, ya que combina información de ambos datasets manteniendo únicamente imágenes independientes.
+
+---
+
+## Distribución del dataset final de pesos
+
+Una vez combinado el dataset de Mendeley con el dataset de Roboflow y eliminados los duplicados, se analizó la distribución de pesos del dataset final.
+
+El dataset final contiene:
+
+- **4761 imágenes**
+- **pesos entre 116 g y 2093 g**
+- **168 valores de peso distintos**
+
+Las estadísticas descriptivas obtenidas son:
+
+| Métrica | Valor |
+|-------|------|
+| Peso mínimo | 116 g |
+| Peso máximo | 2093 g |
+| Media | 471 g |
+| Mediana | 371 g |
+| Percentil 75 | 542 g |
+
+El histograma de distribución muestra que la mayor parte de las muestras se concentran en el rango aproximado de:
+
+**200 g – 600 g**
+
+correspondiente a las primeras fases de crecimiento del pollo.
+
+En cambio, existen relativamente pocas muestras en rangos de peso elevados (por encima de 1200 g).
+
+Esto indica que el dataset presenta una **distribución desbalanceada**, con mayor representación de pollos jóvenes que de pollos cercanos a su peso final.
+
+Aun así, el dataset cubre todo el rango de crecimiento del animal y proporciona una base adecuada para entrenar modelos de **estimación de peso a partir de imágenes**.
