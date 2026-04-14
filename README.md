@@ -22,6 +22,17 @@ The goal of the project is to explore and develop computer vision techniques to 
 
 ---
 
+## Current results (Weight Estimation)
+
+At the current stage of the project, the best-performing model is based on a pretrained ResNet18 with fine-tuning of the final layers.
+
+This approach achieves:
+
+- **MAE ≈ 50 grams**
+- **Mean relative error ≈ 13.86%**
+
+---
+
 ## Project structure
 
 The project is divided into two main application areas:
@@ -43,13 +54,20 @@ data/ (ignored in Github)
     02_work/       -> intermediate processed datasets
     03_final/      -> final datasets (stored in Hugging Face)
 
-scripts/
-    weight_datasets/      -> dataset preparation for weight estimation
-    disease_detection/    -> dataset preparation for disease detection
-
 docs/
     weight_datasets.md    -> documentation for weight estimation datasets
     disease_datasets.md   -> documentation for disease detection datasets
+
+notebooks/
+    weight_estimation/
+        01_weight_estimation_baseline.ipynb
+        02_weight_estimation_improvements.ipynb
+        03_weight_estimation_transfer_learning.ipynb
+    disease_detection/
+
+scripts/
+    weight_datasets/      -> dataset preparation for weight estimation
+    disease_detection/    -> dataset preparation for disease detection
 ```
 
 ---
