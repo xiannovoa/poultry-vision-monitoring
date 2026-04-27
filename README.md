@@ -22,17 +22,6 @@ The goal of the project is to explore and develop computer vision techniques to 
 
 ---
 
-## Current results (Weight Estimation)
-
-At the current stage of the project, the best-performing model is based on a pretrained ResNet18 with fine-tuning of the final layers.
-
-This approach achieves:
-
-- **MAE ≈ 50 grams**
-- **Mean relative error ≈ 13.86%**
-
----
-
 ## Project structure
 
 The project is divided into two main application areas:
@@ -41,6 +30,37 @@ The project is divided into two main application areas:
 - **Disease detection**
 
 Both tasks have independent data processing pipelines and documentation.
+
+---
+
+## Weight Estimation
+
+### Current Results
+
+At the current stage of the project, the best-performing model is based on a pretrained **ResNet50** with fine-tuning of the final layers.
+
+This approach achieves:
+
+- **MAE ≈ 38.8 grams**
+- **Mean relative error ≈ 10.1%**
+
+### Visual results
+
+- **FINAL MODEL PREDICTION:** The model provides accurate weight estimation directly from raw images.
+
+<p align="center">
+  <img src="images/prediction_example.png" width="300"/>
+</p>
+
+- **EXPLORED APPROACHES:** We also explored alternative preprocessing strategies based on segmentation and object detection.
+
+<p align="center">
+  <img src="images/sam_example.png" width="500"/>
+</p>
+
+<p align="center">
+  <img src="images/yolo_example.png" width="500"/>
+</p>
 
 ---
 
@@ -58,12 +78,19 @@ docs/
     weight_datasets.md    -> documentation for weight estimation datasets
     disease_datasets.md   -> documentation for disease detection datasets
 
+images/
+    -> visual results and qualitative examples
+
 notebooks/
     weight_estimation/
         01_weight_estimation_baseline.ipynb
         02_weight_estimation_improvements.ipynb
         03_weight_estimation_transfer_learning.ipynb
+        04_weight_estimation_finetuning_and_SAM_segmentation.ipynb
+        05_weight_estimation_yolo_preprocessing.ipynb
+        06_weight_estimation_resnet50.ipynb
     disease_detection/
+        poultry_feces_classification_workbench.ipynb
 
 scripts/
     weight_datasets/      -> dataset preparation for weight estimation
